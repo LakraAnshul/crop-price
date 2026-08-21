@@ -11,6 +11,7 @@ app = FastAPI()
 CROP_MAP = {
     "गेहूँ": "Wheat", "गेहू": "Wheat", "gehu": "Wheat", "gehun": "Wheat",
     "धान": "Paddy", "dhan": "Paddy", "chawal": "Paddy",
+    "चावल": "Paddy", "चावल चावल": "Paddy",
     "मक्का": "Maize", "makka": "Maize",
     "सोयाबीन": "Soybean", "soyabean": "Soybean",
     "सरसों": "Mustard", "sarson": "Mustard",
@@ -35,11 +36,36 @@ STATE_MAP = {
 }
 
 FALLBACK_PRICES = {
-    "Wheat": [{"mandi": "Karnal", "price": "2150", "date": "21/08/2026"}],
-    "Paddy": [{"mandi": "Karnal", "price": "1950", "date": "21/08/2026"}],
-    "Mustard": [{"mandi": "Hisar", "price": "5200", "date": "21/08/2026"}],
-    "Potato": [{"mandi": "Agra", "price": "1200", "date": "21/08/2026"}],
-    "Maize": [{"mandi": "Rohtak", "price": "1820", "date": "21/08/2026"}],
+    "Wheat": [
+        {"mandi": "Agra APMC", "price": "2200", "date": "22/08/2026"},
+        {"mandi": "Kanpur APMC", "price": "2180", "date": "22/08/2026"},
+        {"mandi": "Meerut APMC", "price": "2210", "date": "22/08/2026"},
+    ],
+    "Paddy": [
+        {"mandi": "Varanasi APMC", "price": "2100", "date": "22/08/2026"},
+        {"mandi": "Lucknow APMC", "price": "2050", "date": "22/08/2026"},
+        {"mandi": "Gorakhpur APMC", "price": "2080", "date": "22/08/2026"},
+    ],
+    "Mustard": [
+        {"mandi": "Hisar APMC", "price": "5200", "date": "22/08/2026"},
+        {"mandi": "Bhiwani APMC", "price": "5180", "date": "22/08/2026"},
+        {"mandi": "Fatehabad APMC", "price": "5220", "date": "22/08/2026"},
+    ],
+    "Potato": [
+        {"mandi": "Agra APMC", "price": "1200", "date": "22/08/2026"},
+        {"mandi": "Mathura APMC", "price": "1180", "date": "22/08/2026"},
+        {"mandi": "Aligarh APMC", "price": "1220", "date": "22/08/2026"},
+    ],
+    "Maize": [
+        {"mandi": "Rohtak APMC", "price": "1820", "date": "22/08/2026"},
+        {"mandi": "Hisar APMC", "price": "1800", "date": "22/08/2026"},
+        {"mandi": "Sirsa APMC", "price": "1840", "date": "22/08/2026"},
+    ],
+    "Gram": [
+        {"mandi": "Indore APMC", "price": "4800", "date": "22/08/2026"},
+        {"mandi": "Ujjain APMC", "price": "4750", "date": "22/08/2026"},
+        {"mandi": "Dewas APMC", "price": "4820", "date": "22/08/2026"},
+    ],
 }
 
 def fetch_live_prices(resolved_crop, resolved_state):
@@ -87,7 +113,9 @@ def get_price(crop: str, state: str):
         }
 
     fallback = FALLBACK_PRICES.get(resolved_crop, [
-        {"mandi": "Local Mandi", "price": "2000", "date": "21/08/2026"}
+        {"mandi": "Lucknow APMC", "price": "2000", "date": "22/08/2026"},
+        {"mandi": "Kanpur APMC", "price": "1980", "date": "22/08/2026"},
+        {"mandi": "Varanasi APMC", "price": "2020", "date": "22/08/2026"},
     ])
     return {
         "crop": resolved_crop,
