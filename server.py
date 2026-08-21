@@ -42,17 +42,16 @@ FALLBACK_PRICES = {
     "Maize": [{"mandi": "Rohtak", "price": "1820", "date": "21/08/2026"}],
 }
 
-def fetch_live_prices(resolved_crop, resolved_state, api_key):
-    url = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+def fetch_live_prices(resolved_crop, resolved_state):
+    url = "https://crop-price-proxy.anshul70503.workers.dev"
+
     params = {
-        "api-key": api_key,
-        "format": "json",
-        "filters[state.keyword]": resolved_state,
-        "filters[commodity]": resolved_crop,
-        "limit": 5
+        "crop": resolved_crop,
+        "state": resolved_state
     }
+
     try:
-        res = requests.get(url, params=params, timeout=5)
+        res = requests.get(url, params=params, timeout=10)
 
         if res.status_code == 200 and res.text.strip():
             data = res.json()
@@ -69,7 +68,7 @@ def fetch_live_prices(resolved_crop, resolved_state, api_key):
                 ]
 
     except Exception as e:
-        print(f"data.gov.in error: {repr(e)}")
+        print(f"Worker API error: {repr(e)}")
 
     return None
 
@@ -78,9 +77,7 @@ def get_price(crop: str, state: str):
     resolved_crop = CROP_MAP.get(crop.strip(), None) or CROP_MAP.get(crop.strip().lower(), crop.title())
     resolved_state = STATE_MAP.get(state.strip().lower(), state.title())
 
-    api_key = os.getenv("DATA_GOV_API_KEY")
-
-    live = fetch_live_prices(resolved_crop, resolved_state, api_key)
+    live = fetch_live_prices(resolved_crop, resolved_state)
     if live:
         return {
             "crop": resolved_crop,
@@ -99,27 +96,6 @@ def get_price(crop: str, state: str):
         "source": "fallback",
         "note": "Live data unavailable. Prices are indicative."
     }
-
-@app.get("/test-api")
-def test_api():
-    try:
-        res = requests.get(
-            "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070",
-            params={
-                "api-key": os.getenv("DATA_GOV_API_KEY"),
-                "format": "json",
-                "limit": 1
-            },
-            timeout=5
-        )
-        return {
-            "status_code": res.status_code,
-            "response": res.text[:500]
-        }
-    except Exception as e:
-        return {
-            "error": repr(e)
-        }
 
 @app.get("/health")
 def health():
