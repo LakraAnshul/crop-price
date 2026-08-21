@@ -50,23 +50,26 @@ def fetch_live_prices(resolved_crop, resolved_state, api_key):
         "filters[commodity]": resolved_crop,
         "limit": 5
     }
-    # Try up to 2 times
-    for attempt in range(2):
-        try:
-            res = requests.get(url, params=params, timeout=25)
-            if res.status_code == 200 and res.text.strip():
-                data = res.json()
-                records = data.get("records", [])
-                if records:
-                    return [
-                        {
-                            "mandi": r.get("market", "Unknown"),
-                            "price": r.get("modal_price", "N/A"),
-                            "date": r.get("arrival_date", "N/A")
-                        } for r in records
-                    ]
-        except Exception:
-            continue
+    try:
+        res = requests.get(url, params=params, timeout=5)
+
+        if res.status_code == 200 and res.text.strip():
+            data = res.json()
+            records = data.get("records", [])
+
+            if records:
+                return [
+                    {
+                        "mandi": r.get("market", "Unknown"),
+                        "price": r.get("modal_price", "N/A"),
+                        "date": r.get("arrival_date", "N/A")
+                    }
+                    for r in records
+                ]
+
+    except Exception as e:
+        print(f"data.gov.in error: {repr(e)}")
+
     return None
 
 @app.get("/mandi-price")
@@ -74,7 +77,7 @@ def get_price(crop: str, state: str):
     resolved_crop = CROP_MAP.get(crop.strip(), None) or CROP_MAP.get(crop.strip().lower(), crop.title())
     resolved_state = STATE_MAP.get(state.strip().lower(), state.title())
 
-    api_key = os.getenv("DATA_GOV_API_KEY", "579b464db66ec23bdd0000014d38cbe81489448652b14d514f71ca4c")
+    api_key = os.getenv("DATA_GOV_API_KEY")
 
     live = fetch_live_prices(resolved_crop, resolved_state, api_key)
     if live:
@@ -95,6 +98,27 @@ def get_price(crop: str, state: str):
         "source": "fallback",
         "note": "Live data unavailable. Prices are indicative."
     }
+
+@app.get("/test-api")
+def test_api():
+    try:
+        res = requests.get(
+            "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070",
+            params={
+                "api-key": os.getenv("DATA_GOV_API_KEY"),
+                "format": "json",
+                "limit": 1
+            },
+            timeout=5
+        )
+        return {
+            "status_code": res.status_code,
+            "response": res.text[:500]
+        }
+    except Exception as e:
+        return {
+            "error": repr(e)
+        }
 
 @app.get("/health")
 def health():
