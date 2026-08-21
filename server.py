@@ -4,6 +4,10 @@ import os
 
 app = FastAPI()
 
+@app.get("/")
+def test_endpoint():
+    return {"status": "ok", "message": "Server is running"}
+
 CROP_MAP = {
     "गेहूँ": "Wheat", "गेहू": "Wheat", "gehu": "Wheat", "gehun": "Wheat",
     "धान": "Paddy", "dhan": "Paddy", "chawal": "Paddy",
